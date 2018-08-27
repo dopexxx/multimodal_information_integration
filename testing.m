@@ -61,11 +61,11 @@ delete(l1)
 
 
 %%
-
-p = '/Users/jannisborn/Desktop/HIFO/body/17-09-22/5212r/201/chunked/Trial_2.mp4';
-
-d = VideoReader(p);
-d.FrameRate
+ma = 'Pearson R';
+for algo = 1:length(motion.algos)
+    if strcmp(motion.algos{algo},ma)
+end
+                
 
     
 
