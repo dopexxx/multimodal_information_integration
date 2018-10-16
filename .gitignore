@@ -2,6 +2,6 @@
 .DS_Store
 
 #Paper and other documentations
-.ppt
-.pptx
-.pdf
+*.ppt
+*.pptx
+*.pdf
