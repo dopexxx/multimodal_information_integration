@@ -31,7 +31,9 @@ properties (Access = private)
    % Internal class variables
     
    allowed_mice = ["5627rr", "5212r", "1110r", "1111lr", "1113rr", "2905l", "2907ll"];
-   allowed_group_crits = ["sensory_task", "visual_task", "naive_task"];
+   allowed_group_crits = ["sensory_task", "visual_task", "naive_task", ...
+       "sensory_stim", "visual_stim", "multi_stim", "no_stim", ...
+       "hit", "miss", "false_alarm", "correct_rejection", "early_lick"];
    allowed_time_lag = [0, 1000]; 
    
    % Path variables
@@ -40,8 +42,6 @@ properties (Access = private)
    meta_file_root = "H:\data\behavior\";
   
    % Data locations
-   %affine_transforms = load(['/Users/jannisborn/Desktop/HIFO/', ...
-   %'multimodal_information_integration/connectivity_analysis/info/transformation_matrices'])
    affine = load('C:\Users\Ayaz-Studi2\Desktop\Jannis\transformation_matrices');
    rois = load('C:\Users\Ayaz-Studi2\Desktop\Jannis\all_ROIs');
    brain_areas = ["V1_rostral", "V1_middle_lateral", "V1_middle_medial", ...
@@ -56,6 +56,8 @@ properties (Access = private)
    ca_img_size = [256, 256];
    samples_per_trial = 200;
    warper;
+   num_trials;% Tracking number of trials of current session
+
 end
 
 
@@ -89,7 +91,7 @@ methods (Access = public)
     %           frames_per_trial = 200 for all data, but #trials varies
     %           highly from session to session
 
-    function obj = gc_analysis(varargin)
+    function obj = gc_gathering(varargin)
 
         % Error handling
         if (nargin < 2 || ~isstring(varargin{1}) || ~isstring(varargin{2})...
@@ -97,10 +99,9 @@ methods (Access = public)
             error(['Please ensure the first arg is a STRING for the '...
                 'mouse name and second arg is a STRING of length 2 '...
                 'for the 2 groups to compare']);
-        elseif nargin==3 && ~isnumeric(varargin(3))
-            error("Please fed a numeric value for max_time_lag");
-        elseif nargin > 3
-            warning("Fourth and all later args are discarded");
+
+        elseif nargin > 2
+            warning("Third and all later args are discarded");
         end
 
         if any(contains(obj.allowed_mice, varargin{1}))
@@ -115,21 +116,10 @@ methods (Access = public)
             error("Unknown or too many group criteria given")
         end
 
-        if nargin >= 3 && (varargin{3} < obj.allowed_time_lag(1) || ...
-                varargin{3} > obj.allowed_time_lag(2))
-            warning("Choose a maxmimum time lag [0, 1000]. Default is used instead")
-            obj.max_time_lag = 300;
-        elseif nargin == 2
-            obj.max_time_lag = 300;
-        else
-            obj.max_time_lag = varargin{3};
-        end
         
         %affine2d class to warp to standard atlas
         obj.warper = eval(strcat('obj.affine.transform.mouse',obj.mouse)); 
         
-        obj.allocate_output();
-
     end
 
 
@@ -138,24 +128,32 @@ methods (Access = public)
     % sessions of a given mouse and extracts the trials according to
     % the criteria defined in group_crit.
     
+    % Allocate struct that will be exported
+    obj.allocate_outputs();
+    
     trial_sum = 10000; % just for data array allocation
+    gc_ind = 0;
+    
     
     for gc = obj.group_crit
         
+        gc_ind = gc_ind + 1;
+        data = zeros(length(obj.brain_areas), obj.samples_per_trial, trial_sum, 2);
         cti = 0; % cumulative_trial_index
-        data = zeros(length(obj.brain_areas), obj.samples_per_trial, trial_sum);
+        sessions = [];
+        trials = [];
         
         % For each hard-disk, go through all subfolders
         for file_path = obj.file_paths
             
-            disp(['Searching now on disk ', file_path(1:2)]);
+            disp(strcat("Searching now on disk ", file_path(1)));
             date_folders = obj.list_subfolders(file_path);
 
             % Open first level of folder (folder names are dates)
             for folder_ind = 1:length(date_folders)
                 
-                disp(['Folder ', num2str(folder_ind), ' out of ', ...
-                    num2str(length(date_folders))]);
+                disp(strcat("Folder ", num2str(folder_ind), " out of ", ...
+                    num2str(length(date_folders))));
                 date_folder = date_folders(folder_ind);
                 tmp = strsplit(date_folder,obj.delimiter);
                 date_id = tmp(end);
@@ -175,7 +173,7 @@ methods (Access = public)
                             session_id = tmp(end);
 
                             % Check whether the session is of given type
-                            % TODO: If other grou criteria are allowed,
+                            % TODO: If other group criteria are allowed,
                             % this needs modification (optional execution
                             % only)
                             meta_path = strcat(obj.meta_file_root, date_id, ...
@@ -196,7 +194,6 @@ methods (Access = public)
                             session_type = obj.get_session_type(metastats);
                             
                             if strcmp(session_type, gc)
-                                
                                 disp(['Now processing session ', ...
                                     num2str(session_id), ' recorded at ', ....
                                     num2str(date_id), '.']);
@@ -204,6 +201,8 @@ methods (Access = public)
                                 t = obj.parse_data(session_folder);
                                 data(:,:,cti+1 : cti+size(t,3)) = t;
                                 cti = cti + size(t,3);
+                                sessions = [sessions, session_id];
+                                trials = [trials, obj.num_trials];
                             end
                         end
                     end
@@ -212,9 +211,22 @@ methods (Access = public)
         end
         
         data(:,:,cti+1:end) = []; % remove unused array space.
+        if gc_ind == 1
+            obj.gca.data_1.data = data;
+            obj.gca.data_1.sessions = sessions;
+            obj.gca.data_1.trials = trials;
+        elseif gc_ind == 2
+            obj.gca.data_2.data = data;
+            obj.gca.data_2.sessions = sessions;
+            obj.gca.data_2.trials = trials;
+        end
     end
-
-
+    
+    % descriptive name
+    save_path = strcat(pwd, '/data/gca_',obj.group_crit(1), '_vs_', ...
+        obj.group_crit(2), '_', obj.mouse);
+    save(save_path,'obj.gca');
+    
     end
 
 end
@@ -237,76 +249,99 @@ methods (Access = private) % Internal methods
         % was visual ("V"), somatosensory ("S") or naive ("N") --> ?.
         
         if sum(strcmpi(stats.stim,"S") & strcmpi(stats.beh,"H")) > 0 
-            session_type = "V";
+            session_type = "sensory_task";
         elseif sum(strcmpi(stats.stim,"V") & strcmpi(stats.beh,"H")) > 0 
-            session_type = "S";
+            session_type = "visual_task";
         else
-            error(strcat("Session type unclear for metastats ", stats));
+            warning(strcat("Session skipped, since type unclear "));
+            session_type = "unknown";
         end
         
     end
     
-    function allocate_output(obj)
-        % Allocate the struct obj that will be exported
-        
-        obj.gca = struct()
+    function allocate_outputs(obj)
+        % Allocate and export a struct object
+        obj.gca = struct();
         obj.gca.mouse = obj.mouse;
         obj.gca.rois = obj.brain_areas;
         obj.gca.groupings = obj.group_crit;
-        obj.gca.data_1 = 
-        obj.gca.data_2 = 
-        
-        
+        obj.gca.data_1 = struct();
+        obj.gca.data_2 = struct();
     end
     
-    function data = parse_data(obj, metastats, path)
+    function data = parse_data(obj, path)
         % Receives the path to a given session and the metastats of the
         % session. Loops over all trials, reads the CA2+ matrix, warps the 
         % data to the standard atlas, applies the ROI mask for each
         % preserved ROI, averages and returns a matrix 'data' of shape:
         % #ROI x samples_per_trial x num_trials
         
-        % File opening and user notifications
         registration = load(strcat(path,'\registration'));
-        disp("Meta information about the retrieved session:")
-        path
-        registration.info
         
         % Allocations
-        warped_data = zeros(obj.ca_img_size(1), obj.ca_img_size(2), ...
-            obj.samples_per_trial, registration.info.trials_obj);
-        cutter = imref2d(obj.ca_img_size);
-
-        % Load imaging data trial per trial
-        % This loop takes around 3sec per iteration.
-        for trial = 1:5%registration.info.trials_obj
-            
-            trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
-            warped_data(:,:,:,trial) = imwarp(trial_data.dFF, obj.warper, ...
-                'OutputView', cutter);
-            if mod(trial, 20) == 0
-                disp(['Currently processing trial ', num2str(trial),'.'])
-            end
-        end
-            
-        w = reshape(warped_data, [size(warped_data,1)*size(warped_data,2), ...
-            size(warped_data,3), size(warped_data,4)]);
-        size(warped_data)
+        % Unfortunately data is double precision float (64bit), but still
+        % in range of numerical imprecisions [0, 2]. Can't reliably convert
+        % to 8bits (uint8) since upper bound unknown. 
+        % Thus can't store data from all trials in memory since 
+        %   256 x 256 x 200 x num_trials (450) are already ca. 45GB memory.
         
-        % Allocations
+        %warped_data = zeros(obj.ca_img_size(1), obj.ca_img_size(2), ...
+        %    obj.samples_per_trial, registration.info.trials_obj);
         data = zeros(length(obj.brain_areas), obj.samples_per_trial, ...
             registration.info.trials_obj);
-        brain_area_ind = 0;
-        % Save average response of all rois for all frames of all trials.
-        for brain_area = obj.brain_areas
+        cutter = imref2d(obj.ca_img_size);
+        
+        % Tracking number of trials of current session
+        obj.num_trials = registration.info.trials_obj;
+
+        % Load imaging data trial per trial
+        tic
+        for trial = 1:registration.info.trials_obj
+            if mod(trial, 20) == 0
+                disp(['Currently processing trial ', num2str(trial),...
+                    '/', num2str(registration.info.trials_obj)]);
+                toc
+                tic;
+            end           
+            trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
+            %warped_data(:,:,:,trial) = imwarp(trial_data.dFF, obj.warper, ...
+            %    'OutputView', cutter);
+            warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
+            warped_data = reshape(warped_data, [size(warped_data,1)*...
+                size(warped_data,2),size(warped_data,3)]);
             
-            brain_area_ind = brain_area_ind+1;
-            area_mask = eval(['obj.rois.ROIs.',brain_area,',maskCircle']);
-            flat_mask = reshape(area_mask, [size(area_mask,1)*...
-                size(area_mask,2),1]);
-            
-            data(brain_area_ind,:,:) = squeeze(mean(w(flat_mask,:,:),1));
+            brain_area_ind = 0;
+            % Save average response of all rois for all frames of all trials.
+            for brain_area = obj.brain_areas
+
+                brain_area_ind = brain_area_ind+1;
+                area_mask = eval(strcat('obj.rois.ROIs.',brain_area,'.maskCircle'));
+                flat_mask = reshape(area_mask, [size(area_mask,1)*...
+                    size(area_mask,2),1]);
+
+                data(brain_area_ind,:,trial) = squeeze(mean(warped_data(flat_mask,:),1));
+            end
+
         end
+            
+        %w = reshape(warped_data, [size(warped_data,1)*size(warped_data,2), ...
+        %    size(warped_data,3), size(warped_data,4)]);
+        %size(warped_data)
+        
+        % Allocations
+        %data = zeros(length(obj.brain_areas), obj.samples_per_trial, ...
+        %    registration.info.trials_obj);
+%         brain_area_ind = 0;
+%         % Save average response of all rois for all frames of all trials.
+%         for brain_area = obj.brain_areas
+%             
+%             brain_area_ind = brain_area_ind+1;
+%             area_mask = eval(['obj.rois.ROIs.',brain_area,',maskCircle']);
+%             flat_mask = reshape(area_mask, [size(area_mask,1)*...
+%                 size(area_mask,2),1]);
+%             
+%             data(brain_area_ind,:,:) = squeeze(mean(w(flat_mask,:,:),1));
+%         end
     end
 end
     

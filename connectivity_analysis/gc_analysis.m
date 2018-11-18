@@ -26,5 +26,25 @@ properties (Access = public)
     max_time_lag
 end
 
-    
+
+
+ % Error handling
+        if (nargin < 2 || ~isstring(varargin{1}) || ~isstring(varargin{2})...
+                || length(varargin{2})~= 2)
+            error(['Please ensure the first arg is a STRING for the '...
+                'mouse name and second arg is a STRING of length 2 '...
+                'for the 2 groups to compare']);
+            
+            
+if         elseif nargin==3 && ~isnumeric(varargin(3))
+            error("Please fed a numeric value for max_time_lag");
+    if nargin >= 3 && (varargin{3} < obj.allowed_time_lag(1) || ...
+                varargin{3} > obj.allowed_time_lag(2))
+            warning("Choose a maxmimum time lag [0, 1000]. Default is used instead")
+            obj.max_time_lag = 300;
+        elseif nargin == 2
+            obj.max_time_lag = 300;
+        else
+            obj.max_time_lag = varargin{3};
+        end
 end
