@@ -1,6 +1,9 @@
 function [e] = readExperimentData(path,filename)
 
-full=[path,filename]
+% deprecated. Use strcat, which works with both, char and string.s - Jannis
+%full=[path,filename] 
+full = strcat(path,filename)
+    
 fid = fopen(full); % e.g. '5627rr-s3-exp.txt'
 C = textscan(fid, '%s','delimiter', '\t');
 fclose(fid);
