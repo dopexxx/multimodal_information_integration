@@ -17,11 +17,14 @@
 %       Choose from {"I", "F"}
 %
 % SAVES:
-%   For each of the following groups (see below), one struct is saved in a subfolder
-%   data of the same directory like this file.
-
-%       #ROI x samples_per_trial x num_trial 
-% that are saved within a struct and that can be used for gc analysis.
+%   For each of the following groups (see below), one struct is saved in
+%       H:\Jannis\granger_causality_data\
+%
+%   Each file has shape #ROI x samples_per_trial x num_trial 
+%
+%   NOTE:
+%      Sessions where the mouse was unreactive (always or never licked) 
+%           are discarded.
 % 
 % groups = {sensory_task, visual_task, naive_task, sensory_stim, visual_stim, 
 %   multi_stim, no_stim, hit, miss, false_alarm, correct_rejection, early_lick}
@@ -141,7 +144,6 @@ methods (Access = public)
     
     % Allocate structs that will be exported
     obj = obj.allocate_outputs();
-    
     % cumulative_trial_indices. Tracks for each group how many columns were
     % written.
     obj.cti = zeros(obj.groups,1); 
@@ -172,6 +174,9 @@ methods (Access = public)
                 for session_folder = session_folders
                     tmp = strsplit(session_folder,obj.delimiter);
                     session_id = tmp(end);
+                    % Check whether folder name is valid session_id
+                    [num, status] = str2num(session_id);
+                    error = ~status;
 
                     % Check whether the session is of given type
 
@@ -184,18 +189,20 @@ methods (Access = public)
                           '-exp.txt'));
                     catch
                         warning(strcat("Date ", date_id, ...
-                            " session ", session_id, "is ", ...
+                            " session ", num2str(session_id), "is ", ...
                             "skipped, because metafile was ", ...
                             "not found or threw an error"));
+                        error = 1;
                     end
 
-                    session_type = obj.get_session_type(metastats);
+                    session_type = obj.get_session_type(metastats, date_id, session_id);
 
-                    disp(['Now processing session ', ...
-                            num2str(session_id), ' recorded at ', ....
-                            num2str(date_id), '.']);
 
-                    obj.parse_data(session_folder, session_type, metastats);
+                    if ~strcmpi(session_type,"unknown") && ~error
+                        disp(['Now processing session ',num2str(session_id),...
+                            ' recorded at ', num2str(date_id), '.']);
+                        obj = obj.parse_data(session_folder, session_type, metastats);
+                    end
                 end
             end
         end
@@ -219,7 +226,7 @@ methods (Access = private) % Internal methods
         date_folders = strcat(path, obj.delimiter, date_folders)';
     end
     
-    function session_type = get_session_type(obj, stats)
+    function session_type = get_session_type(obj, stats, date_id, session_id)
         % Receives the stats of a session and returns whether the session
         % was visual ("V"), somatosensory ("S") or naive ("N") --> ?.
         
@@ -228,7 +235,8 @@ methods (Access = private) % Internal methods
         elseif sum(strcmpi(stats.stim,"V") & strcmpi(stats.beh,"H")) > 0 
             session_type = "visual_task";
         else
-            warning(strcat("Session skipped, since type unclear "));
+            warning(strcat("Date ",date_id," session ",num2str(session_id), ...
+                " is skipped, since type unclear "));
             session_type = "unknown";
         end
         
@@ -310,6 +318,8 @@ methods (Access = private) % Internal methods
     function save_all(obj)
     
     % remove unused array space.
+    obj.cti(obj.cti==0) = 1; % safety in case one group was not found.
+    obj.cti(1)
     obj.visual_task.data(:,:,obj.cti(1):end) = []; 
     obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
     obj.naive_task.data(:,:,obj.cti(3):end) = []; 
@@ -325,9 +335,12 @@ methods (Access = private) % Internal methods
     
     
     % save all variables
-    save([obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk],'obj.visual_task');
-    save([obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk],'obj.sensory_task');
-    save([obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk],'obj.naive_task');
+    visual_task = obj.visual_task;
+    sensory_task = obj.sensory_task;
+    naive_task = obj.naive_task;
+    save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task');
+    save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task');
+    save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task');
 %     save([obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk],'obj.visual_stim');
 %     save([obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk],'obj.sensory_stim');
 %     save([obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk],'obj.multi_stim');
@@ -340,7 +353,7 @@ methods (Access = private) % Internal methods
 
     end
     
-    function parse_data(obj, path, session_type, metastats)
+    function obj = parse_data(obj, path, session_type, metastats)
         % Receives the path to a given session and the metastats of the
         % session. Loops over all trials, reads the CA2+ matrix, warps the 
         % data to the standard atlas, applies the ROI mask for each
@@ -378,7 +391,8 @@ methods (Access = private) % Internal methods
             warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
             warped_data = reshape(warped_data, [size(warped_data,1)*...
                 size(warped_data,2),size(warped_data,3)]);
-            
+            session_ind = session_ind + 1;
+
             % Save average response of all rois for all frames of all trials.
             for roi_ind = 1:length(obj.brain_areas)
                 area_mask = eval(strcat('obj.rois.ROIs.',obj.brain_areas(roi_ind),'.maskCircle'));
@@ -388,7 +402,6 @@ methods (Access = private) % Internal methods
                 roi_value = squeeze(mean(warped_data(flat_mask,:),1));
                 
                 % Now write data to the right arrays. Start with session
-                session_ind = session_ind + 1;
                 session_data(roi_ind,:,session_ind) = roi_value;
                 
                 % Infer trial stimulus and response
