@@ -179,7 +179,7 @@ methods (Access = public)
                     error = ~status;
 
                     % Check whether the session is of given type
-
+                    if ~error
                     meta_path = strcat(obj.meta_file_root, date_id, ...
                         obj.delimiter, obj.mouse, obj.delimiter, ...
                         session_id, obj.delimiter);
@@ -202,6 +202,7 @@ methods (Access = public)
                         disp(['Now processing session ',num2str(session_id),...
                             ' recorded at ', num2str(date_id), '.']);
                         obj = obj.parse_data(session_folder, session_type, metastats);
+                    end
                     end
                 end
             end
@@ -319,7 +320,6 @@ methods (Access = private) % Internal methods
     
     % remove unused array space.
     obj.cti(obj.cti==0) = 1; % safety in case one group was not found.
-    obj.cti(1)
     obj.visual_task.data(:,:,obj.cti(1):end) = []; 
     obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
     obj.naive_task.data(:,:,obj.cti(3):end) = []; 
@@ -381,70 +381,75 @@ methods (Access = private) % Internal methods
         % Load imaging data trial per trial
         tic
         for trial = 1:registration.info.trials_obj
+            error = 0;
             if mod(trial, 20) == 0
                 disp(['Currently processing trial ', num2str(trial),...
                     '/', num2str(registration.info.trials_obj)]);
-                toc
-                tic;
-            end           
-            trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
-            warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
-            warped_data = reshape(warped_data, [size(warped_data,1)*...
-                size(warped_data,2),size(warped_data,3)]);
-            session_ind = session_ind + 1;
-
-            % Save average response of all rois for all frames of all trials.
-            for roi_ind = 1:length(obj.brain_areas)
-                area_mask = eval(strcat('obj.rois.ROIs.',obj.brain_areas(roi_ind),'.maskCircle'));
-                flat_mask = reshape(area_mask, [size(area_mask,1)*...
-                    size(area_mask,2),1]);
-                
-                roi_value = squeeze(mean(warped_data(flat_mask,:),1));
-                
-                % Now write data to the right arrays. Start with session
-                session_data(roi_ind,:,session_ind) = roi_value;
-                
-                % Infer trial stimulus and response
-                stim = metastats.stim{trial};
-                beh = metastats.beh{trial};
-                
-%                 if strcmpi(stim, 'V')
-%                     obj.cti(4) = obj.cti(4)+1;
-%                     obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
-%                 elseif strcmpi(stim, 'S')
-%                     obj.cti(5) = obj.cti(5)+1;
-%                     obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
-%                 elseif strcmpi(stim, 'VS')
-%                     obj.cti(6) = obj.cti(6)+1;
-%                     obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
-%                 elseif strcmpi(stim, 'N')
-%                     obj.cti(7) = obj.cti(7)+1;
-%                     obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
-%                 else
-%                     warning(strcat("Unknown stimulus type: ", stim));
-%                 end
-                
-%                 if strcmpi(beh, 'H')
-%                     obj.cti(8) = obj.cti(8)+1;
-%                     obj.hit.data(roi_ind,:,obj.cti(8)) = roi_value;
-%                 elseif strcmpi(beh, 'M')
-%                     obj.cti(9) = obj.cti(9)+1;
-%                     obj.miss.data(roi_ind,:,obj.cti(9)) = roi_value;                  
-%                 elseif strcmpi(beh, 'FA')
-%                     obj.cti(10) = obj.cti(10)+1;
-%                     obj.false_alarm.data(roi_ind,:,obj.cti(10)) = roi_value;
-%                 elseif strcmpi(beh, 'CR')
-%                     obj.cti(11) = obj.cti(11)+1;
-%                     obj.correct_rejection.data(roi_ind,:,obj.cti(11)) = roi_value;
-%                 elseif strcmpi(beh, 'EL')
-%                     obj.cti(12) = obj.cti(12)+1;
-%                     obj.early_lick.data(roi_ind,:,obj.cti(12)) = roi_value;
-%                 else
-%                     warning(strcat("Unknown response type: ", beh));
-%                 end
-                              
             end
+            try 
+                trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
+            catch
+                warning(strcat("Trial ", num2str(trial), " was not found."));
+                error = 1;
+            end
+            if ~error
+                warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
+                warped_data = reshape(warped_data, [size(warped_data,1)*...
+                    size(warped_data,2),size(warped_data,3)]);
+                session_ind = session_ind + 1;
 
+                % Save average response of all rois for all frames of all trials.
+                for roi_ind = 1:length(obj.brain_areas)
+                    area_mask = eval(strcat('obj.rois.ROIs.',obj.brain_areas(roi_ind),'.maskCircle'));
+                    flat_mask = reshape(area_mask, [size(area_mask,1)*...
+                        size(area_mask,2),1]);
+
+                    roi_value = squeeze(mean(warped_data(flat_mask,:),1));
+
+                    % Now write data to the right arrays. Start with session
+                    session_data(roi_ind,:,session_ind) = roi_value;
+
+                    % Infer trial stimulus and response
+                    stim = metastats.stim{trial};
+                    beh = metastats.beh{trial};
+                
+    %                 if strcmpi(stim, 'V')
+    %                     obj.cti(4) = obj.cti(4)+1;
+    %                     obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
+    %                 elseif strcmpi(stim, 'S')
+    %                     obj.cti(5) = obj.cti(5)+1;
+    %                     obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
+    %                 elseif strcmpi(stim, 'VS')
+    %                     obj.cti(6) = obj.cti(6)+1;
+    %                     obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
+    %                 elseif strcmpi(stim, 'N')
+    %                     obj.cti(7) = obj.cti(7)+1;
+    %                     obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
+    %                 else
+    %                     warning(strcat("Unknown stimulus type: ", stim));
+    %                 end
+
+    %                 if strcmpi(beh, 'H')
+    %                     obj.cti(8) = obj.cti(8)+1;
+    %                     obj.hit.data(roi_ind,:,obj.cti(8)) = roi_value;
+    %                 elseif strcmpi(beh, 'M')
+    %                     obj.cti(9) = obj.cti(9)+1;
+    %                     obj.miss.data(roi_ind,:,obj.cti(9)) = roi_value;                  
+    %                 elseif strcmpi(beh, 'FA')
+    %                     obj.cti(10) = obj.cti(10)+1;
+    %                     obj.false_alarm.data(roi_ind,:,obj.cti(10)) = roi_value;
+    %                 elseif strcmpi(beh, 'CR')
+    %                     obj.cti(11) = obj.cti(11)+1;
+    %                     obj.correct_rejection.data(roi_ind,:,obj.cti(11)) = roi_value;
+    %                 elseif strcmpi(beh, 'EL')
+    %                     obj.cti(12) = obj.cti(12)+1;
+    %                     obj.early_lick.data(roi_ind,:,obj.cti(12)) = roi_value;
+    %                 else
+    %                     warning(strcat("Unknown response type: ", beh));
+    %                 end
+
+                end
+            end
         end
         
         % Merge session data and index with the right class variable
