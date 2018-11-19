@@ -379,8 +379,13 @@ methods (Access = private) % Internal methods
         end
         
         % Load imaging data trial per trial
+        if ~(registration.info.trials_obj==length(metastats.beh))
+            warning(strcat("Found CA data for ", num2str(registration.info.trials_obj), ...
+                " trials, but behavioral data for ", num2str(length(metastats.beh)), ...
+                ". Will neglect overhead trials."));
+        end
         tic
-        for trial = 1:registration.info.trials_obj
+        for trial = 1:min(registration.info.trials_obj,length(metastats.beh))
             error = 0;
             if mod(trial, 20) == 0
                 disp(['Currently processing trial ', num2str(trial),...
@@ -388,7 +393,7 @@ methods (Access = private) % Internal methods
             end
             try 
                 trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
-                if any(isnan(trial_data(:)))
+                if any(isnan(trial_data.dFF(:)))
                     error = 1;
                     warning(strcat("Trial ", num2str(trial), " was ", ...
                         "skipped since it contains at least one NaN."));
@@ -402,6 +407,10 @@ methods (Access = private) % Internal methods
                 warped_data = reshape(warped_data, [size(warped_data,1)*...
                     size(warped_data,2),size(warped_data,3)]);
                 session_ind = session_ind + 1;
+                
+                % Infer trial stimulus and response
+                stim = metastats.stim{trial};
+                beh = metastats.beh{trial};
 
                 % Save average response of all rois for all frames of all trials.
                 for roi_ind = 1:length(obj.brain_areas)
@@ -414,10 +423,6 @@ methods (Access = private) % Internal methods
                     % Now write data to the right arrays. Start with session
                     session_data(roi_ind,:,session_ind) = roi_value;
 
-                    % Infer trial stimulus and response
-                    stim = metastats.stim{trial};
-                    beh = metastats.beh{trial};
-                
     %                 if strcmpi(stim, 'V')
     %                     obj.cti(4) = obj.cti(4)+1;
     %                     obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
