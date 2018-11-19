@@ -388,6 +388,11 @@ methods (Access = private) % Internal methods
             end
             try 
                 trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
+                if any(isnan(trial_data(:)))
+                    error = 1;
+                    warning(strcat("Trial ", num2str(trial), " was ", ...
+                        "skipped since it contains at least one NaN."));
+                end
             catch
                 warning(strcat("Trial ", num2str(trial), " was not found."));
                 error = 1;
