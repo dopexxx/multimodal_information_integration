@@ -320,13 +320,13 @@ methods (Access = private) % Internal methods
     
     % remove unused array space.
     obj.cti(obj.cti==0) = 1; % safety in case one group was not found.
-    obj.visual_task.data(:,:,obj.cti(1):end) = []; 
-    obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
-    obj.naive_task.data(:,:,obj.cti(3):end) = []; 
-%     obj.visual_stim.data(:,:,obj.cti(4):end) = []; 
-%     obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
-%     obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
-%     obj.no_stim.data(:,:,obj.cti(7):end) = []; 
+%     obj.visual_task.data(:,:,obj.cti(1):end) = []; 
+%     obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
+%     obj.naive_task.data(:,:,obj.cti(3):end) = []; 
+    obj.visual_stim.data(:,:,obj.cti(4):end) = []; 
+    obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
+    obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
+    obj.no_stim.data(:,:,obj.cti(7):end) = []; 
 %     obj.hit.data(:,:,obj.cti(8):end) = []; 
 %     obj.miss.data(:,:,obj.cti(9):end) = []; 
 %     obj.false_alarm.data(:,:,obj.cti(10):end) = []; 
@@ -338,13 +338,17 @@ methods (Access = private) % Internal methods
     visual_task = obj.visual_task;
     sensory_task = obj.sensory_task;
     naive_task = obj.naive_task;
-    save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task');
-    save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task');
-    save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task');
-%     save([obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk],'obj.visual_stim');
-%     save([obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk],'obj.sensory_stim');
-%     save([obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk],'obj.multi_stim');
-%     save([obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk],'obj.no_stim');
+    visual_stim = obj.visual_stim;
+    sensory_stim = obj.sensory_stim;
+    multi_stim = obj.multi_stim;
+    no_stim = obj.no_stim;
+%     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task');
+%     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task');
+%     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task');
+    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim');
+    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim');
+    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim');
+    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim');
 %     save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit');
 %     save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss');
 %     save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm');
@@ -370,13 +374,13 @@ methods (Access = private) % Internal methods
         % Thus can't store data from all trials in memory since 
         %   256 x 256 x 200 x num_trials (450) are already ca. 45GB memory.
         
-        if strcmpi(session_type, "visual_task")
-            session_data = obj.visual_task.data; session_ind = obj.cti(1);
-        elseif strcmpi(session_type, "sensory_task")
-            session_data = obj.sensory_task.data; session_ind = obj.cti(2);
-        elseif strcmpi(session_type, "naive_task")
-            session_data = obj.naive_task.data; session_ind = obj.cti(3);
-        end
+%         if strcmpi(session_type, "visual_task")
+%             session_data = obj.visual_task.data; session_ind = obj.cti(1);
+%         elseif strcmpi(session_type, "sensory_task")
+%             session_data = obj.sensory_task.data; session_ind = obj.cti(2);
+%         elseif strcmpi(session_type, "naive_task")
+%             session_data = obj.naive_task.data; session_ind = obj.cti(3);
+%         end
         
         % Load imaging data trial per trial
         if ~(registration.info.trials_obj==length(metastats.beh))
@@ -406,7 +410,7 @@ methods (Access = private) % Internal methods
                 warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
                 warped_data = reshape(warped_data, [size(warped_data,1)*...
                     size(warped_data,2),size(warped_data,3)]);
-                session_ind = session_ind + 1;
+                %session_ind = session_ind + 1;
                 
                 % Infer trial stimulus and response
                 stim = metastats.stim{trial};
@@ -421,23 +425,23 @@ methods (Access = private) % Internal methods
                     roi_value = squeeze(mean(warped_data(flat_mask,:),1));
 
                     % Now write data to the right arrays. Start with session
-                    session_data(roi_ind,:,session_ind) = roi_value;
+%                     session_data(roi_ind,:,session_ind) = roi_value;
 
-    %                 if strcmpi(stim, 'V')
-    %                     obj.cti(4) = obj.cti(4)+1;
-    %                     obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
-    %                 elseif strcmpi(stim, 'S')
-    %                     obj.cti(5) = obj.cti(5)+1;
-    %                     obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
-    %                 elseif strcmpi(stim, 'VS')
-    %                     obj.cti(6) = obj.cti(6)+1;
-    %                     obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
-    %                 elseif strcmpi(stim, 'N')
-    %                     obj.cti(7) = obj.cti(7)+1;
-    %                     obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
-    %                 else
-    %                     warning(strcat("Unknown stimulus type: ", stim));
-    %                 end
+                    if strcmpi(stim, 'V')
+                        obj.cti(4) = obj.cti(4)+1;
+                        obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
+                    elseif strcmpi(stim, 'S')
+                        obj.cti(5) = obj.cti(5)+1;
+                        obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
+                    elseif strcmpi(stim, 'V+S')
+                        obj.cti(6) = obj.cti(6)+1;
+                        obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
+                    elseif strcmpi(stim, 'N')
+                        obj.cti(7) = obj.cti(7)+1;
+                        obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
+                    else
+                        warning(strcat("Unknown stimulus type: ", stim));
+                    end
 
     %                 if strcmpi(beh, 'H')
     %                     obj.cti(8) = obj.cti(8)+1;
@@ -462,14 +466,14 @@ methods (Access = private) % Internal methods
             end
         end
         
-        % Merge session data and index with the right class variable
-        if strcmpi(session_type, "visual_task")
-            obj.visual_task.data = session_data; obj.cti(1) = session_ind;
-        elseif strcmpi(session_type, "sensory_task")
-            obj.sensory_task.data = session_data; obj.cti(2) = session_ind;
-        elseif strcmpi(session_type, "naive_task")
-            obj.naive_task.data = session_data; obj.cti(3) = session_ind;
-        end
+%         % Merge session data and index with the right class variable
+%         if strcmpi(session_type, "visual_task")
+%             obj.visual_task.data = session_data; obj.cti(1) = session_ind;
+%         elseif strcmpi(session_type, "sensory_task")
+%             obj.sensory_task.data = session_data; obj.cti(2) = session_ind;
+%         elseif strcmpi(session_type, "naive_task")
+%             obj.naive_task.data = session_data; obj.cti(3) = session_ind;
+%         end
     end
 end
     
