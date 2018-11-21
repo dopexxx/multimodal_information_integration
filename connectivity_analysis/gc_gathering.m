@@ -92,7 +92,7 @@ methods (Access = public)
     %           analysis is gathered from each session/trial fullfiling 
     %           the specified condition. The output of both GC analyses
     %           is then tested for significance.
-    %           TODO: Enable further groupings such as 
+    %            further groupings such as 
     %               (A)     Stimulus type (V, S, N, VS).
     %               (B)     Response type (H, FA, CR, M).
     %               (C)     Performance level (High, low).
@@ -249,71 +249,71 @@ methods (Access = private) % Internal methods
         spt = obj.samples_per_trial;
         ts = obj.trial_sum;
         
-    
-        obj.sensory_task = struct();
-        obj.sensory_task.mouse = obj.mouse;
-        obj.sensory_task.rois = obj.brain_areas;
-        obj.sensory_task.data = zeros(length(obj.brain_areas), spt , ts);
-        
-        obj.visual_task = struct();
-        obj.visual_task.mouse = obj.mouse;
-        obj.visual_task.rois = obj.brain_areas;
-        obj.visual_task.data = zeros(length(obj.brain_areas), spt , ts);       
+%     
+%         obj.sensory_task = struct();
+%         obj.sensory_task.mouse = obj.mouse;
+%         obj.sensory_task.rois = obj.brain_areas;
+%         obj.sensory_task.data = zeros(length(obj.brain_areas), spt , ts);
+%         
+%         obj.visual_task = struct();
+%         obj.visual_task.mouse = obj.mouse;
+%         obj.visual_task.rois = obj.brain_areas;
+%         obj.visual_task.data = zeros(length(obj.brain_areas), spt , ts);       
+% 
+%         obj.naive_task = struct();
+%         obj.naive_task.mouse = obj.mouse;
+%         obj.naive_task.rois = obj.brain_areas;
+%         obj.naive_task.data = zeros(length(obj.brain_areas), spt , ts);
 
-        obj.naive_task = struct();
-        obj.naive_task.mouse = obj.mouse;
-        obj.naive_task.rois = obj.brain_areas;
-        obj.naive_task.data = zeros(length(obj.brain_areas), spt , ts);
-
         
-% 
-%         obj.sensory_stim = struct();
-%         obj.sensory_stim.mouse = obj.mouse;
-%         obj.sensory_stim.rois = obj.brain_areas;
-%         obj.sensory_stim.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
-%         obj.visual_stim = struct();
-%         obj.visual_stim.mouse = obj.mouse;
-%         obj.visual_stim.rois = obj.brain_areas;
-%         obj.visual_stim.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
-%         obj.multi_stim = struct();
-%         obj.multi_stim.mouse = obj.mouse;
-%         obj.multi_stim.rois = obj.brain_areas;
-%         obj.multi_stim.data = zeros(length(obj.brain_areas), spt , ts);  
-%         
-%         obj.no_stim = struct();
-%         obj.no_stim.mouse = obj.mouse;
-%         obj.no_stim.rois = obj.brain_areas;
-%         obj.no_stim.data = zeros(length(obj.brain_areas), spt , ts);  
-%         
-%         
-%         
-%         obj.early_lick = struct();
-%         obj.early_lick.mouse = obj.mouse;
-%         obj.early_lick.rois = obj.brain_areas;
-%         obj.early_lick.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
-%         obj.correct_rejection = struct();
-%         obj.correct_rejection.mouse = obj.mouse;
-%         obj.correct_rejection.rois = obj.brain_areas;
-%         obj.correct_rejection.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
-%         obj.false_alarm = struct();
-%         obj.false_alarm.mouse = obj.mouse;
-%         obj.false_alarm.rois = obj.brain_areas;
-%         obj.false_alarm.data = zeros(length(obj.brain_areas), spt , ts);   
-%         
-%         obj.miss = struct();
-%         obj.miss.mouse = obj.mouse;
-%         obj.miss.rois = obj.brain_areas;
-%         obj.miss.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
-%         obj.hit = struct();
-%         obj.hit.mouse = obj.mouse;
-%         obj.hit.rois = obj.brain_areas;
-%         obj.hit.data = zeros(length(obj.brain_areas), spt , ts);   
-% 
+
+        obj.sensory_stim = struct();
+        obj.sensory_stim.mouse = obj.mouse;
+        obj.sensory_stim.rois = obj.brain_areas;
+        obj.sensory_stim.data = zeros(length(obj.brain_areas), spt , ts);   
+
+        obj.visual_stim = struct();
+        obj.visual_stim.mouse = obj.mouse;
+        obj.visual_stim.rois = obj.brain_areas;
+        obj.visual_stim.data = zeros(length(obj.brain_areas), spt , ts);   
+
+        obj.multi_stim = struct();
+        obj.multi_stim.mouse = obj.mouse;
+        obj.multi_stim.rois = obj.brain_areas;
+        obj.multi_stim.data = zeros(length(obj.brain_areas), spt , ts);  
+        
+        obj.no_stim = struct();
+        obj.no_stim.mouse = obj.mouse;
+        obj.no_stim.rois = obj.brain_areas;
+        obj.no_stim.data = zeros(length(obj.brain_areas), spt , ts);  
+        
+        
+        
+        obj.early_lick = struct();
+        obj.early_lick.mouse = obj.mouse;
+        obj.early_lick.rois = obj.brain_areas;
+        obj.early_lick.data = zeros(length(obj.brain_areas), spt , ts);   
+
+        obj.correct_rejection = struct();
+        obj.correct_rejection.mouse = obj.mouse;
+        obj.correct_rejection.rois = obj.brain_areas;
+        obj.correct_rejection.data = zeros(length(obj.brain_areas), spt , ts);   
+
+        obj.false_alarm = struct();
+        obj.false_alarm.mouse = obj.mouse;
+        obj.false_alarm.rois = obj.brain_areas;
+        obj.false_alarm.data = zeros(length(obj.brain_areas), spt , ts);   
+        
+        obj.miss = struct();
+        obj.miss.mouse = obj.mouse;
+        obj.miss.rois = obj.brain_areas;
+        obj.miss.data = zeros(length(obj.brain_areas), spt , ts);   
+
+        obj.hit = struct();
+        obj.hit.mouse = obj.mouse;
+        obj.hit.rois = obj.brain_areas;
+        obj.hit.data = zeros(length(obj.brain_areas), spt , ts);   
+
     end
     
     function save_all(obj)
@@ -327,33 +327,39 @@ methods (Access = private) % Internal methods
     obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
     obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
     obj.no_stim.data(:,:,obj.cti(7):end) = []; 
-%     obj.hit.data(:,:,obj.cti(8):end) = []; 
-%     obj.miss.data(:,:,obj.cti(9):end) = []; 
-%     obj.false_alarm.data(:,:,obj.cti(10):end) = []; 
-%     obj.correct_rejection.data(:,:,obj.cti(11):end) = []; 
-%     obj.early_lick.data(:,:,obj.cti(12):end) = []; 
+    obj.hit.data(:,:,obj.cti(8):end) = []; 
+    obj.miss.data(:,:,obj.cti(9):end) = []; 
+    obj.false_alarm.data(:,:,obj.cti(10):end) = []; 
+    obj.correct_rejection.data(:,:,obj.cti(11):end) = []; 
+    obj.early_lick.data(:,:,obj.cti(12):end) = []; 
     
     
     % save all variables
-    visual_task = obj.visual_task;
-    sensory_task = obj.sensory_task;
-    naive_task = obj.naive_task;
+%     visual_task = obj.visual_task;
+%     sensory_task = obj.sensory_task;
+%     naive_task = obj.naive_task;
     visual_stim = obj.visual_stim;
     sensory_stim = obj.sensory_stim;
     multi_stim = obj.multi_stim;
     no_stim = obj.no_stim;
-%     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task');
-%     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task');
-%     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task');
-    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim');
-    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim');
-    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim');
-    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim');
-%     save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit');
-%     save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss');
-%     save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm');
-%     save([obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk],'obj.correct_rejection');
-%     save([obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk],'obj.early_lick');
+    hit = obj.hit;
+    miss = obj.miss;
+    false_alarm = obj.false_alarm;
+    correct_rejection = obj.correct_rejection;
+    early_lick = obj.early_lick;
+    
+%     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task','v7-3');
+%     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task','v7-3');
+%     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task','v7-3');
+    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim','v7-3');
+    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim','v7-3');
+    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim','v7-3');
+    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim','v7-3');
+    save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit','v7-3');
+    save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss','v7-3');
+    save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm','v7-3');
+    save([obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk],'obj.correct_rejection','v7-3');
+    save([obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk],'obj.early_lick','v7-3');
 
     end
     
@@ -443,24 +449,24 @@ methods (Access = private) % Internal methods
                         warning(strcat("Unknown stimulus type: ", stim));
                     end
 
-    %                 if strcmpi(beh, 'H')
-    %                     obj.cti(8) = obj.cti(8)+1;
-    %                     obj.hit.data(roi_ind,:,obj.cti(8)) = roi_value;
-    %                 elseif strcmpi(beh, 'M')
-    %                     obj.cti(9) = obj.cti(9)+1;
-    %                     obj.miss.data(roi_ind,:,obj.cti(9)) = roi_value;                  
-    %                 elseif strcmpi(beh, 'FA')
-    %                     obj.cti(10) = obj.cti(10)+1;
-    %                     obj.false_alarm.data(roi_ind,:,obj.cti(10)) = roi_value;
-    %                 elseif strcmpi(beh, 'CR')
-    %                     obj.cti(11) = obj.cti(11)+1;
-    %                     obj.correct_rejection.data(roi_ind,:,obj.cti(11)) = roi_value;
-    %                 elseif strcmpi(beh, 'EL')
-    %                     obj.cti(12) = obj.cti(12)+1;
-    %                     obj.early_lick.data(roi_ind,:,obj.cti(12)) = roi_value;
-    %                 else
-    %                     warning(strcat("Unknown response type: ", beh));
-    %                 end
+                    if strcmpi(beh, 'H')
+                        obj.cti(8) = obj.cti(8)+1;
+                        obj.hit.data(roi_ind,:,obj.cti(8)) = roi_value;
+                    elseif strcmpi(beh, 'M')
+                        obj.cti(9) = obj.cti(9)+1;
+                        obj.miss.data(roi_ind,:,obj.cti(9)) = roi_value;                  
+                    elseif strcmpi(beh, 'FA')
+                        obj.cti(10) = obj.cti(10)+1;
+                        obj.false_alarm.data(roi_ind,:,obj.cti(10)) = roi_value;
+                    elseif strcmpi(beh, 'CR')
+                        obj.cti(11) = obj.cti(11)+1;
+                        obj.correct_rejection.data(roi_ind,:,obj.cti(11)) = roi_value;
+                    elseif strcmpi(beh, 'EL')
+                        obj.cti(12) = obj.cti(12)+1;
+                        obj.early_lick.data(roi_ind,:,obj.cti(12)) = roi_value;
+                    else
+                        warning(strcat("Unknown response type: ", beh));
+                    end
 
                 end
             end
