@@ -62,8 +62,7 @@ properties (Access = private)
        "M1_intermediate", "M1_medial", "M2_rostrolateral", "M2_rostromedial", ...
        "M2_intermiedate", "M2_caudal", "PFC_prelimbic", "PFC_ACC"];
    
-   ca_img_size = [256, 256];
-   cutter = imref2d(ca_img_size);
+   cutter = imref2d([256, 256]); % image size = 256 x 256
    samples_per_trial = 200;
    warper;
    num_trials;% Tracking number of trials of current session
@@ -352,18 +351,18 @@ methods (Access = private) % Internal methods
     correct_rejection = obj.correct_rejection;
     early_lick = obj.early_lick;
     
-%     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task','v7-3');
-%     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task','v7-3');
-%     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task','v7-3');
-    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim','v7-3');
-    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim','v7-3');
-    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim','v7-3');
-    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim','v7-3');
-    save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit','v7-3');
-    save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss','v7-3');
-    save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm','v7-3');
-    save([obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk],'obj.correct_rejection','v7-3');
-    save([obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk],'obj.early_lick','v7-3');
+%     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task','-v7.3');
+%     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task','-v7.3');
+%     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task','-v7.3');
+    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim','-v7.3');
+    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim','-v7.3');
+    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim','-v7.3');
+    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim','-v7.3');
+    save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit','-v7.3');
+    save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss','-v7.3');
+    save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm','-v7.3');
+    save([obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk],'obj.correct_rejection','-v7.3');
+    save([obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk],'obj.early_lick','-v7.3');
 
     end
     
@@ -373,9 +372,9 @@ methods (Access = private) % Internal methods
         % data to the standard atlas, applies the ROI mask for each
         % preserved ROI, averages and returns a matrix 'data' of shape:
         % #ROI x samples_per_trial x num_trials
-        
+        tic
         registration = load(strcat(path,'\registration'));
-        
+        toc
    
         % Allocations
         % Unfortunately data is double precision float (64bit), but still
@@ -404,6 +403,8 @@ methods (Access = private) % Internal methods
             if mod(trial, 20) == 0
                 disp(['Currently processing trial ', num2str(trial),...
                     '/', num2str(registration.info.trials_obj)]);
+                toc
+                tic
             end
             try 
                 trial_data = load(strcat(path,'\dFF_t',num2str(trial)));
