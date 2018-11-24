@@ -63,10 +63,11 @@ properties (Access = private)
        "M2_intermiedate", "M2_caudal", "PFC_prelimbic", "PFC_ACC"];
    
    ca_img_size = [256, 256];
+   cutter = imref2d(ca_img_size);
    samples_per_trial = 200;
    warper;
    num_trials;% Tracking number of trials of current session
-   trial_sum = 50000; % just for data array allocation
+   trial_sum = 10000; % just for data array allocation
    cti; % order of ctis is like in 'groups'.
    
    % data structs
@@ -197,7 +198,6 @@ methods (Access = public)
 
                     session_type = obj.get_session_type(metastats, date_id, session_id);
 
-
                     if ~strcmpi(session_type,"unknown") && ~error
                         disp(['Now processing session ',num2str(session_id),...
                             ' recorded at ', num2str(date_id), '.']);
@@ -323,10 +323,12 @@ methods (Access = private) % Internal methods
 %     obj.visual_task.data(:,:,obj.cti(1):end) = []; 
 %     obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
 %     obj.naive_task.data(:,:,obj.cti(3):end) = []; 
+
     obj.visual_stim.data(:,:,obj.cti(4):end) = []; 
     obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
     obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
     obj.no_stim.data(:,:,obj.cti(7):end) = []; 
+    
     obj.hit.data(:,:,obj.cti(8):end) = []; 
     obj.miss.data(:,:,obj.cti(9):end) = []; 
     obj.false_alarm.data(:,:,obj.cti(10):end) = []; 
@@ -338,10 +340,12 @@ methods (Access = private) % Internal methods
 %     visual_task = obj.visual_task;
 %     sensory_task = obj.sensory_task;
 %     naive_task = obj.naive_task;
+
     visual_stim = obj.visual_stim;
     sensory_stim = obj.sensory_stim;
     multi_stim = obj.multi_stim;
     no_stim = obj.no_stim;
+    
     hit = obj.hit;
     miss = obj.miss;
     false_alarm = obj.false_alarm;
@@ -371,7 +375,7 @@ methods (Access = private) % Internal methods
         % #ROI x samples_per_trial x num_trials
         
         registration = load(strcat(path,'\registration'));
-        cutter = imref2d(obj.ca_img_size);
+        
    
         % Allocations
         % Unfortunately data is double precision float (64bit), but still
@@ -413,7 +417,7 @@ methods (Access = private) % Internal methods
                 error = 1;
             end
             if ~error
-                warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', cutter);
+                warped_data = imwarp(trial_data.dFF, obj.warper,'OutputView', obj.cutter);
                 warped_data = reshape(warped_data, [size(warped_data,1)*...
                     size(warped_data,2),size(warped_data,3)]);
                 %session_ind = session_ind + 1;
