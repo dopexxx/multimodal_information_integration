@@ -37,6 +37,9 @@ properties (Access = public)
     % Declare class variables
     mouse
     disk
+    sensory_task; visual_task; naive_task; sensory_stim; visual_stim; 
+    multi_stim; no_stim; hit; miss; false_alarm; correct_rejection;
+    early_lick;
 end
 
 properties (Access = private)
@@ -71,9 +74,6 @@ properties (Access = private)
    
    % data structs
    groups = 12; % count of all following groups.
-   sensory_task; visual_task; naive_task; sensory_stim; visual_stim; 
-    multi_stim; no_stim; hit; miss; false_alarm; correct_rejection;
-    early_lick;
 end
 
 
@@ -266,25 +266,25 @@ methods (Access = private) % Internal methods
 
         
 
-        obj.sensory_stim = struct();
-        obj.sensory_stim.mouse = obj.mouse;
-        obj.sensory_stim.rois = obj.brain_areas;
-        obj.sensory_stim.data = zeros(length(obj.brain_areas), spt , ts);   
-
-        obj.visual_stim = struct();
-        obj.visual_stim.mouse = obj.mouse;
-        obj.visual_stim.rois = obj.brain_areas;
-        obj.visual_stim.data = zeros(length(obj.brain_areas), spt , ts);   
-
-        obj.multi_stim = struct();
-        obj.multi_stim.mouse = obj.mouse;
-        obj.multi_stim.rois = obj.brain_areas;
-        obj.multi_stim.data = zeros(length(obj.brain_areas), spt , ts);  
-        
-        obj.no_stim = struct();
-        obj.no_stim.mouse = obj.mouse;
-        obj.no_stim.rois = obj.brain_areas;
-        obj.no_stim.data = zeros(length(obj.brain_areas), spt , ts);  
+%         obj.sensory_stim = struct();
+%         obj.sensory_stim.mouse = obj.mouse;
+%         obj.sensory_stim.rois = obj.brain_areas;
+%         obj.sensory_stim.data = zeros(length(obj.brain_areas), spt , ts);   
+% 
+%         obj.visual_stim = struct();
+%         obj.visual_stim.mouse = obj.mouse;
+%         obj.visual_stim.rois = obj.brain_areas;
+%         obj.visual_stim.data = zeros(length(obj.brain_areas), spt , ts);   
+% 
+%         obj.multi_stim = struct();
+%         obj.multi_stim.mouse = obj.mouse;
+%         obj.multi_stim.rois = obj.brain_areas;
+%         obj.multi_stim.data = zeros(length(obj.brain_areas), spt , ts);  
+%         
+%         obj.no_stim = struct();
+%         obj.no_stim.mouse = obj.mouse;
+%         obj.no_stim.rois = obj.brain_areas;
+%         obj.no_stim.data = zeros(length(obj.brain_areas), spt , ts);  
         
         
         
@@ -323,10 +323,10 @@ methods (Access = private) % Internal methods
 %     obj.sensory_task.data(:,:,obj.cti(2):end) = []; 
 %     obj.naive_task.data(:,:,obj.cti(3):end) = []; 
 
-    obj.visual_stim.data(:,:,obj.cti(4):end) = []; 
-    obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
-    obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
-    obj.no_stim.data(:,:,obj.cti(7):end) = []; 
+%     obj.visual_stim.data(:,:,obj.cti(4):end) = []; 
+%     obj.sensory_stim.data(:,:,obj.cti(5):end) = []; 
+%     obj.multi_stim.data(:,:,obj.cti(6):end) = []; 
+%     obj.no_stim.data(:,:,obj.cti(7):end) = []; 
     
     obj.hit.data(:,:,obj.cti(8):end) = []; 
     obj.miss.data(:,:,obj.cti(9):end) = []; 
@@ -340,10 +340,10 @@ methods (Access = private) % Internal methods
 %     sensory_task = obj.sensory_task;
 %     naive_task = obj.naive_task;
 
-    visual_stim = obj.visual_stim;
-    sensory_stim = obj.sensory_stim;
-    multi_stim = obj.multi_stim;
-    no_stim = obj.no_stim;
+%     visual_stim = obj.visual_stim;
+%     sensory_stim = obj.sensory_stim;
+%     multi_stim = obj.multi_stim;
+%     no_stim = obj.no_stim;
     
     hit = obj.hit;
     miss = obj.miss;
@@ -354,16 +354,15 @@ methods (Access = private) % Internal methods
 %     save(strcat(obj.save_path,'gca_visual_task_', obj.mouse, '_disk_', obj.disk),'visual_task','-v7.3');
 %     save(strcat(obj.save_path,'gca_sensory_task_', obj.mouse, '_disk_', obj.disk),'sensory_task','-v7.3');
 %     save(strcat(obj.save_path,'gca_naive_task_', obj.mouse, '_disk_', obj.disk),'naive_task','-v7.3');
-    save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim','-v7.3');
-    save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim','-v7.3');
-    save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim','-v7.3');
-    save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim','-v7.3');
-    save([obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk],'obj.hit','-v7.3');
-    save([obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk],'obj.miss','-v7.3');
-    save([obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk],'obj.false_alarm','-v7.3');
-    save([obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk],'obj.correct_rejection','-v7.3');
-    save([obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk],'obj.early_lick','-v7.3');
-
+%     save(strcat(obj.save_path,'gca_visual_stim_', obj.mouse, '_disk_', obj.disk),'visual_stim','-v7.3');
+%     save(strcat(obj.save_path,'gca_sensory_stim_', obj.mouse, '_disk_', obj.disk),'sensory_stim','-v7.3');
+%     save(strcat(obj.save_path,'gca_multi_stim_', obj.mouse, '_disk_', obj.disk),'multi_stim','-v7.3');
+%     save(strcat(obj.save_path,'gca_no_stim_', obj.mouse, '_disk_', obj.disk),'no_stim','-v7.3');
+    save(strcat(obj.save_path,'gca_hit_', obj.mouse, '_disk_', obj.disk),'hit','-v7.3');
+    save(strcat(obj.save_path,'gca_miss_', obj.mouse, '_disk_', obj.disk),'miss','-v7.3');
+    save(strcat(obj.save_path,'gca_false_alarm_', obj.mouse, '_disk_', obj.disk),'false_alarm','-v7.3');
+    save(strcat(obj.save_path,'gca_correct_rejection_', obj.mouse, '_disk_', obj.disk),'correct_rejection','-v7.3');
+    save(strcat(obj.save_path,'gca_early_lick_', obj.mouse, '_disk_', obj.disk),'early_lick','-v7.3');
     end
     
     function obj = parse_data(obj, path, session_type, metastats)
@@ -374,7 +373,6 @@ methods (Access = private) % Internal methods
         % #ROI x samples_per_trial x num_trials
         tic
         registration = load(strcat(path,'\registration'));
-        toc
    
         % Allocations
         % Unfortunately data is double precision float (64bit), but still
@@ -438,21 +436,21 @@ methods (Access = private) % Internal methods
                     % Now write data to the right arrays. Start with session
 %                     session_data(roi_ind,:,session_ind) = roi_value;
 
-                    if strcmpi(stim, 'V')
-                        obj.cti(4) = obj.cti(4)+1;
-                        obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
-                    elseif strcmpi(stim, 'S')
-                        obj.cti(5) = obj.cti(5)+1;
-                        obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
-                    elseif strcmpi(stim, 'V+S')
-                        obj.cti(6) = obj.cti(6)+1;
-                        obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
-                    elseif strcmpi(stim, 'N')
-                        obj.cti(7) = obj.cti(7)+1;
-                        obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
-                    else
-                        warning(strcat("Unknown stimulus type: ", stim));
-                    end
+%                     if strcmpi(stim, 'V')
+%                         obj.cti(4) = obj.cti(4)+1;
+%                         obj.visual_stim.data(roi_ind,:,obj.cti(4)) = roi_value;
+%                     elseif strcmpi(stim, 'S')
+%                         obj.cti(5) = obj.cti(5)+1;
+%                         obj.sensory_stim.data(roi_ind,:,obj.cti(5)) = roi_value;                  
+%                     elseif strcmpi(stim, 'V+S')
+%                         obj.cti(6) = obj.cti(6)+1;
+%                         obj.multi_stim.data(roi_ind,:,obj.cti(6)) = roi_value;
+%                     elseif strcmpi(stim, 'N')
+%                         obj.cti(7) = obj.cti(7)+1;
+%                         obj.no_stim.data(roi_ind,:,obj.cti(7)) = roi_value;
+%                     else
+%                         warning(strcat("Unknown stimulus type: ", stim));
+%                     end
 
                     if strcmpi(beh, 'H')
                         obj.cti(8) = obj.cti(8)+1;
