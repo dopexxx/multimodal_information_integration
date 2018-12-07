@@ -26,6 +26,12 @@ properties (Access = public)
     max_time_lag
 end
 
+properties (Access = public)
+    % Declare class variables
+    root = "H:\Jannis\granger_causality_data\";
+    delim = "\";
+end
+
 
 
  % Error handling
@@ -46,5 +52,8 @@ if         elseif nargin==3 && ~isnumeric(varargin(3))
             obj.max_time_lag = 300;
         else
             obj.max_time_lag = varargin{3};
+        end
+end
+
         end
 end

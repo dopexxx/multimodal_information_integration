@@ -33,11 +33,13 @@
 %
 %%
 
-function plot_pw(P,cm)
+function plot_pw(P,cm, names)
 
 if nargin < 2 || isempty(cm), cm =flipud(bone); end;
 
 n = size(P,1);
+if nargin < 3, names = 1:n; end;
+
 assert(ismatrix(P) && size(P,2) == n,'input must be a square 2D matrix');
 
 colormap(cm);
@@ -48,6 +50,7 @@ axis('square');
 xlabel('from');
 ylabel('to');
 set(gca,'XTick',1:n);
-set(gca,'XTickLabel',1:n);
+set(gca,'XTickLabel',names);
 set(gca,'YTick',1:n);
-set(gca,'YTickLabel',1:n);
+set(gca,'YTickLabel',names);
+xtickangle(90);
