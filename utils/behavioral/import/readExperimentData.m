@@ -51,7 +51,12 @@ e.learnCorrectRejection = str2num(cell2mat(C{1,1}(idx_4+19)));
 e.enforceCorrect = str2num(cell2mat(C{1,1}(idx_4+21)));
 
 e.stim = C{1,1}(idx_5+1:idx_6-1);
-e.beh = C{1,1}(idx_6+1:idx_7-1);
+e.stim = C{1,1}(idx_5+1:idx_6-1);
+if idx_7 > idx_6
+    e.beh = C{1,1}(idx_6+1:idx_7-1);
+else
+    e.beh = C{1,1}(idx_6+1:idx_6+length(e.stim));
+end
 e.sel = C{1,1}(idx_7+1:end);
 
 end

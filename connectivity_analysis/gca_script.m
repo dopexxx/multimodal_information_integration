@@ -1,16 +1,10 @@
 %% GC ANALYSIS SCRIPT
-%% Define task options
-mouse = "5212r";
 
-condition1 = "visual_task";
-condition2 = "sensory_task";
-
-%%
-root = "H:\Jannis\granger_causality_data\";
-delim = "\";
-disk = "I";
-
-brain_areas = ["V1 rostral", "V1 middle lateral", "V1 middle medial", ...
+% Meta variables
+ROOT = "/Users/jannisborn/Desktop/HIFO/";
+DATA_PATH = strcat(ROOT, "gc_matrices/");
+DISKS = ["F", "I"];
+BRAIN_AREAS = ["V1 rostral", "V1 middle lateral", "V1 middle medial", ...
        "V1 caudal lateral", "V1 caudal medial", "V rostral", "V anterolateral", ...
        "V lateral", "V posteromedial", "V anterior", "Retrosplenial caudal", ...
        "Retrosplenial rostral", "Retrosplenial inter", "Aud", "S1 rostral", ...
@@ -18,144 +12,96 @@ brain_areas = ["V1 rostral", "V1 middle lateral", "V1 middle medial", ...
        "S forelimb", "S nose", "S mouth", "S supplementary", "M1 lateral", ...
        "M1 intermediate", "M1 medial", "M2 rostrolateral", "M2 rostromedial", ...
        "M2 intermiedate", "M2 caudal", "PFC prelimbic", "PFC ACC"];
+   
+   
+SR        = 20;    % sample rate (Hz)
+MOMAX     = 6;     % maximum model order for model order estimation
 
-p1 = strcat(root,"gca_",condition1,"_",mouse,"_disk_",disk);
-p2 = strcat(root,"gca_",condition2,"_",mouse,"_disk_",disk);
+   
+% Loop variables
+MOUSES = ["5212r","1110r", "5627rr", "1111lr", "1113rr", "2905l", "2907ll"];
+CONDITIONS = ["hit", "correct_rejection", "early_lick", ...
+    "false_alarm",  "multi_stim", "no_stim", "visual_stim", ...
+    "sensory_stim", "miss"];
+%% Loop over all mice and all conditions
 
-load(p1); % visual_task.data
-load(p2); % sensory_task.data
+try
+    for condition = CONDITIONS
+        for mouse = MOUSES
 
-% Only investigate matrix 1
-X = eval(strcat(condition2,".data"));
+            if ((mouse == "5627rr" && condition == "visual_task") || ...
+                mouse == "5212r" && condition == "hit")
+                continue
+            end
+            
+            disp(strcat("Now starting with mouse = ", mouse, " condition = ", condition));
 
-T = reshape(X, [size(X,1),size(X,2)*size(X,3)]);
-missing_rois = find(~any(T,2));
-disp(strcat('Exclude ROI numbers = ', num2str(missing_rois), ' due to missing data.'));
+            brain_areas = BRAIN_AREAS; % create local copy
 
-X(missing_rois,:,:) = [];
-brain_areas(missing_rois) = [];
+            % Collect the data matrices
+            data = zeros(33, 200, 0);
+            for disk = DISKS
+                file_path = strcat(DATA_PATH,"gca_",condition,"_",mouse,"_disk_",disk);
 
-%% GCA FUNCTION
-ntrials   = size(X,3);     % number of trials
-nobs      = size(X,2);  % number of observations per trial
-nrois      = size(X,1);  % number of observations per trial
+                % Load data from specific disk
+                try
+                    load(file_path);
+                    data = cat(3, data, eval(strcat(condition, ".data")));
+                catch
+                    warning(strcat("Path ", file_path, "not available"));
+                end
+                
+            end
+            if size(data,3) == 0
+                disp("Now data, skipping this computation");
+                continue
+            end
 
-regmode   = 'OLS';  % VAR model estimation regression mode ('OLS', 'LWR' or empty for default)
-icregmode = 'LWR';  % information criteria regression mode ('OLS', 'LWR' or empty for default)
+            % Throw out missing ROIs
+            tmp = reshape(data, [size(data,1),size(data,2)*size(data,3)]);
+            missing_rois = find(~any(tmp,2));
+            data(missing_rois,:,:) = [];
+            brain_areas(missing_rois) = [];
+            disp(strcat('Excluded ROI numbers = ', num2str(missing_rois), ' due to missing data.'));
 
-morder    = 'AIC';  % model order to use ('actual', 'AIC', 'BIC' or supplied numerical value)
-momax     = 6;     % maximum model order for model order estimation
+             % Remove sparsity bug
+            if ~(condition == "visual_task" || condition == "sensory_task")
+                new_data = zeros(size(data));
+                ind_old = 1;
+                ind_new = 1;
+                while ind_old < size(data,3)
+                    roi_ind = 0;
+                    slice = data(:,:,ind_old);
+                    roi_ind_new = find(any(slice,2));
+                    while roi_ind_new > roi_ind
+                        roi_ind = roi_ind_new;
+                        new_data(roi_ind,:,ind_new) = data(roi_ind, :, ind_old);
+                        ind_old = ind_old+1;
+                        if ind_old > size(data,3) continue; end
+                        slice = data(:,:,ind_old);
+                        roi_ind_new = find(any(slice,2));
+                        
+                    end
+                    if isempty(roi_ind_new)
+                        ind_old = ind_old + 1;
+                    end
+                    ind_new = ind_new + 1;
+                    
+                end
+                new_data(:,:,ind_new+1:end) = [];
+                data = new_data;
+                disp("Done with removing sparsity bug");
 
-acmaxlags = 1000;   % maximum autocovariance lags (empty for automatic calculation)
+            end
 
-tstat     = '';     % statistical test for MVGC:  'F' for Granger's F-test (default) or 'chi2' for Geweke's chi2 test
-alpha     = 0.001;   % significance level for significance test
-mhtc      = 'FDR';  % multiple hypothesis test correction (see routine 'significance')
+            save_path = strcat(ROOT, "gc_results/", mouse,"_",condition,"/");
+            mkdir(save_path);
+            results = gc_analysis(data, SR, MOMAX, save_path, brain_areas);
 
-fs        = 200;    % sample rate (Hz)
-fres      = [];     % frequency resolution (empty for automatic calculation)
+        end
 
-seed      = 0;      % random seed (0 for unseeded)
+    end
 
-%%
-
-% Calculate information criteria up to specified maximum model order.
-
-ptic('\n*** tsdata_to_infocrit\n');
-[AIC,BIC,moAIC,moBIC] = tsdata_to_infocrit(X,momax,icregmode);
-ptoc('*** tsdata_to_infocrit took ');
-
-% Plot information criteria.
-
-figure(1); clf;
-plot_tsdata([AIC BIC]',{'AIC','BIC'},1/fs);
-title('Model order estimation');
-
-%amo = size(AT,3); % actual model order
-
-fprintf('\nbest model order (AIC) = %d\n',moAIC);
-fprintf('best model order (BIC) = %d\n',moBIC);
-%fprintf('actual model order     = %d\n',amo);
-
-% Select model order.
-
-if     strcmpi(morder,'actual')
-    morder = amo;
-    fprintf('\nusing actual model order = %d\n',morder);
-elseif strcmpi(morder,'AIC')
-    morder = moAIC;
-    fprintf('\nusing AIC best model order = %d\n',morder);
-elseif strcmpi(morder,'BIC')
-    morder = moBIC;
-    fprintf('\nusing BIC best model order = %d\n',morder);
-else
-    fprintf('\nusing specified model order = %d\n',morder);
+catch
+    warning("Error in gca_script.m");
 end
-
-%% VAR model estimation (<mvgc_schema.html#3 |A2|>)
-
-% Estimate VAR model of selected order from data.
-
-ptic('\n*** tsdata_to_var... ');
-[A,SIG] = tsdata_to_var(X,morder,regmode);
-ptoc;
-
-% Check for failed regression
-
-assert(~isbad(A),'VAR estimation failed');
-
-% NOTE: at this point we have a model and are finished with the data! - all
-% subsequent calculations work from the estimated VAR parameters A and SIG.
-
-%% Autocovariance calculation (<mvgc_schema.html#3 |A5|>)
-
-% The autocovariance sequence drives many Granger causality calculations (see
-% next section). Now we calculate the autocovariance sequence G according to the
-% VAR model, to as many lags as it takes to decay to below the numerical
-% tolerance level, or to acmaxlags lags if specified (i.e. non-empty).
-
-ptic('*** var_to_autocov... ');
-[G,info] = var_to_autocov(A,SIG,acmaxlags);
-ptoc;
-
-% The above routine does a LOT of error checking and issues useful diagnostics.
-% If there are problems with your data (e.g. non-stationarity, colinearity,
-% etc.) there's a good chance it'll show up at this point - and the diagnostics
-% may supply useful information as to what went wrong. It is thus essential to
-% report and check for errors here.
-
-var_info(info,true); % report results (and bail out on error)
-
-%% Granger causality calculation: time domain  (<mvgc_schema.html#3 |A13|>)
-
-% Calculate time-domain pairwise-conditional causalities - this just requires
-% the autocovariance sequence.
-
-% This takes time
-ptic('*** autocov_to_pwcgc... ');
-F = autocov_to_pwcgc(G);
-ptoc;
-
-% Check for failed GC calculation
-
-assert(~isbad(F,false),'GC calculation failed');
-%%
-% Significance test using theoretical null distribution, adjusting for multiple
-% hypotheses.
-alpha = 0.001;
-pval = mvgc_pval(F,morder,nobs,ntrials,1,1,nrois-2,tstat); % take careful note of arguments!
-sig  = significance(pval,alpha,mhtc);
-
-% Plot time-domain causal graph, p-values and significance.
-
-figure('units','normalized','outerposition',[0 0 1 1]); clf;
-plot_pw(F, [], brain_areas);
-title('Pairwise-conditional GC');
-
-% For good measure we calculate Seth's causal density (cd) measure - the mean
-% pairwise-conditional causality. We don't have a theoretical sampling
-% distribution for this.
-
-cd = mean(F(~isnan(F)));
-
-fprintf('\ncausal density = %f\n',cd);

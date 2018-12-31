@@ -54,3 +54,4 @@ set(gca,'XTickLabel',names);
 set(gca,'YTick',1:n);
 set(gca,'YTickLabel',names);
 xtickangle(90);
+colorbar;

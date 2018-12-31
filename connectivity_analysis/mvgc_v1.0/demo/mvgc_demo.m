@@ -62,7 +62,7 @@ regmode   = 'OLS';  % VAR model estimation regression mode ('OLS', 'LWR' or empt
 icregmode = 'LWR';  % information criteria regression mode ('OLS', 'LWR' or empty for default)
 
 morder    = 'AIC';  % model order to use ('actual', 'AIC', 'BIC' or supplied numerical value)
-momax     = 20;     % maximum model order for model order estimation
+momax     = 6;     % maximum model order for model order estimation
 
 acmaxlags = 1000;   % maximum autocovariance lags (empty for automatic calculation)
 
@@ -192,7 +192,8 @@ sig  = significance(pval,alpha,mhtc);
 
 % Plot time-domain causal graph, p-values and significance.
 
-figure(2); clf;
+figure('units','normalized','outerposition',[0 0 1 1]); clf;
+set(gcf,'color','w');
 subplot(1,3,1);
 plot_pw(F);
 title('Pairwise-conditional GC');
