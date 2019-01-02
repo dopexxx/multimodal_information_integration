@@ -98,8 +98,7 @@ try
                 disp("Done with removing sparsity bug");
             end
             
-            % Throw out first X measurements if applicable
-            data = data(:, TIME_ONSET:end, :);
+            % Throw out first X measuremen
 
             save_path = strcat(ROOT, "gc_results/", mouse,"_",condition,"/");
             mkdir(save_path);

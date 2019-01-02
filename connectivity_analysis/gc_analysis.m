@@ -2,7 +2,7 @@ function results = gc_analysis(data, sr, momax, save_path, brain_areas)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % CONTEXT AND SOURCES:
-% Class for granger causality analysis of Ca2+ data of multiple ROI of mice
+% Function for granger causality analysis of Ca2+ data of multiple ROI of mice
 %   behaving under different task conditions. 
 %  Utilized toolbox: Multivariate Granger Causality Analysis Toolbox:
 %   [1] L. Barnett, A. K. Seth, The MVGC Multivariate Granger Causality Toolbox: 
@@ -31,7 +31,7 @@ morder    = 'AIC';  % model order to use ('actual', 'AIC', 'BIC' or supplied num
 acmaxlags = 5000;   % maximum autocovariance lags (empty for automatic calculation)
 tstat     = '';     % statistical test for MVGC:  'F' for Granger's F-test (default) or 'chi2' for Geweke's chi2 test
 alpha     = 0.001;   % significance level for significance test
-mhtc      = 'FDR';  % multiple hypothesis test correction (see routine 'significance')
+mhtc      = 'Bonferroni';  % multiple hypothesis test correction (see routine 'significance')
 
 %% Start to work on the data
 
@@ -41,7 +41,7 @@ ntrials = size(data,3);     % number of trials
 
 folder_name = strsplit(save_path,'/'); folder_name = folder_name(end-1);
 mouse = strsplit(folder_name,'_'); mouse = mouse(1);
-condition = strsplit(folder_name,'_'); condition = strjoin(condition(2:end-1));
+condition = strsplit(folder_name,'_'); condition = strjoin(condition(2:end),"_");
 
 
 results = struct();

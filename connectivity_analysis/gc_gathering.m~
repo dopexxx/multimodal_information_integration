@@ -369,17 +369,17 @@ methods (Access = private) % Internal methods
 %     obj.correct_rejection.data(:,:,obj.cti(11):end) = []; 
 %     obj.early_lick.data(:,:,obj.cti(12):end) = []; 
     
-    obj.visual_task.beh(~cellfun('isempty',obj.visual_task.beh));
-    obj.visual_task.stim(~cellfun('isempty',obj.visual_task.stim));
-    obj.visual_task.session(~cellfun('isempty',obj.visual_task.session));
+    obj.visual_task.beh(~cellfun('isempty',obj.visual_task.beh))
+    obj.visual_task.stim(~cellfun('isempty',obj.visual_task.stim))
+    obj.visual_task.session(~cellfun('isempty',obj.visual_task.session))
 
-    obj.sensory_task.beh(~cellfun('isempty',obj.sensory_task.beh));
-    obj.sensory_task.stim(~cellfun('isempty',obj.sensory_task.stim));
-    obj.sensory_task.session(~cellfun('isempty',obj.sensory_task.session));
+    obj.sensory_task.beh(~cellfun('isempty',obj.sensory_task.beh))
+    obj.sensory_task.stim(~cellfun('isempty',obj.sensory_task.stim))
+    obj.sensory_task.session(~cellfun('isempty',obj.sensory_task.session))
 
-    obj.naive_task.beh(~cellfun('isempty',obj.naive_task.beh));
-    obj.naive_task.stim(~cellfun('isempty',obj.naive_task.stim));
-    obj.naive_task.session(~cellfun('isempty',obj.naive_task.session));
+    obj.naive_task.beh(~cellfun('isempty',obj.naive_task.beh))
+    obj.naive_task.stim(~cellfun('isempty',obj.naive_task.stim))
+    obj.naive_task.session(~cellfun('isempty',obj.naive_task.session))
 
 %     obj.visual_stim.beh(~cellfun('isempty',obj.visual_stim.beh))
 %     obj.visual_stim.stim(~cellfun('isempty',obj.visual_stim.stim))
