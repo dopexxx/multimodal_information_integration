@@ -6,7 +6,6 @@
 *.doc
 *.ppt
 *.pptx
-*.pdf
 
 #Data files
 *.mat
