@@ -2,7 +2,7 @@ function [e] = readExperimentData(path,filename)
 
 % deprecated. Use strcat, which works with both, char and string.s - Jannis
 %full=[path,filename] 
-full = strcat(path,filename)
+full = strcat(path,filename);
     
 fid = fopen(full); % e.g. '5627rr-s3-exp.txt'
 C = textscan(fid, '%s','delimiter', '\t');
@@ -15,6 +15,7 @@ fclose(fid);
 [truefalse, idx_5] = ismember('TRIAL SEQUENCE', C{1,1});
 [truefalse, idx_6] = ismember('BEHAVIOR SEQUENCE', C{1,1});
 [truefalse, idx_7] = ismember('TRIAL SELECTION SEQUENCE', C{1,1});
+[truefalse, idx_8] = ismember('MODALITY RELEVANCE', C{1,1});
 
 %e.t_abs = datetime(strcat(C{1,1}(idx_1+1),C{1,1}(idx_1+2)),'InputFormat','dd.MM.yyyy HH:mm:ss.SSSS');
 e.animal = cell2mat(C{1,1}(idx_1+4));
@@ -58,5 +59,18 @@ else
     e.beh = C{1,1}(idx_6+1:idx_6+length(e.stim));
 end
 e.sel = C{1,1}(idx_7+1:end);
+
+vr = str2double(cell2mat(C{1,1}(idx_8+2)));
+sr = str2double(cell2mat(C{1,1}(idx_8+4)));
+if vr==1 && sr==0
+    e.task = "visual_task";
+elseif vr==0 && sr==1
+    e.task = "sensory_task";
+elseif vr==0 && sr==0
+    e.task = "naive_task";
+else
+    warning(strcat("Task type could not be determined, visual relevant is ",...
+        vr, ' sensory relevant is ', sr));
+end
 
 end

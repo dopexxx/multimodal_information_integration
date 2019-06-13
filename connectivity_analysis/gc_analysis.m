@@ -48,6 +48,7 @@ results = struct();
 results.data = data;
 results.momax = momax;
 results.sampling_rate = sr;
+results.brain_areas = brain_areas;
 
 try
     %% Calculate information criteria
@@ -130,6 +131,8 @@ try
     % hypotheses.
     pval = mvgc_pval(F,morder,nobs,ntrials,1,1,nrois-2,tstat);
     sig  = significance(pval,alpha,mhtc);
+    results.pval = pval;
+    results.sig = sig;
 
     % Plot time-domain results
     % (1) causal graph
