@@ -15,7 +15,6 @@ MOMAX     = 6;     % maximum model order for model order estimation (300ms delay
 PHASES = ["sensory", "response", "reward"];
 TIMES = {[30, 66], [76, 126], [120, 160]};
 
-
 %% Task specific extractions
 
 MICE = ["1113rr", "1110r","1111lr", "5212r", "5627rr"];
