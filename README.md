@@ -2,7 +2,7 @@
 Code for network analysis (Granger causality) of widefield calcium imaging data of multisensory project at HIFO/UZH.
 
 This repo contains code to:
-1. Investigate multimodal information integration in mice primary sensory cortices
+1. Investigate multimodal information integration in mice primary sensory cortices:
 
 
 ![alt text](utils/figures/sensory_task_by_beh_response_phase.png "Sensory task")
